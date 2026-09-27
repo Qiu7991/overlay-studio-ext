@@ -69,7 +69,9 @@ function ownerOf(lines, i, isCss) {
 function scan() {
   const hits = [];
   for (const file of walk(SRC)) {
-    const rel = path.relative(ROOT, file);
+    // Windows 兼容:path.relative 在 Windows 上返回反斜杠,而台账(motion-reviewed.json)
+    // 里的 key 用的是正斜杠 —— 不归一化的话,已登记的豁免在 Windows 上会全部重新报一遍。
+    const rel = path.relative(ROOT, file).split(path.sep).join("/");
     const isCss = file.endsWith(".css");
     const lines = fs.readFileSync(file, "utf8").split("\n");
     lines.forEach((raw, i) => {

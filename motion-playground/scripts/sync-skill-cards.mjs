@@ -146,7 +146,10 @@ function buildSection(groups, old) {
 
 const byVar = scanEffects();
 const groups = scanGroups(byVar);
-const md = fs.readFileSync(SKILL, "utf8");
+// Windows 兼容:git 默认 core.autocrlf=true,检出的 SKILL.md 是 CRLF,而本脚本生成的正文是 LF。
+// 不归一化的话,内容明明一致却会判定「与 registry.ts 不一致」——每次 --check 都误报。
+// 读进来先折成 LF,写回去也保持 LF(生成物只认内容,不认行尾)。
+const md = fs.readFileSync(SKILL, "utf8").replace(/\r\n/g, "\n");
 const old = parseExisting(cardsRegion(md));
 
 const { body, count } = buildSection(groups, old);
