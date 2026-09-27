@@ -25,6 +25,18 @@ import {
   type StyleProfile,
 } from "./styles";
 import { normalizeAspect, type Aspect } from "./stage";
+import {
+  DEFAULT_DARK_PALETTE,
+  DEFAULT_LIGHT_PALETTE,
+  KEYS as THEME_KEYS,
+  readSchemeChoice,
+  readStored,
+  schemeOf,
+  systemScheme,
+  writeSchemeChoice,
+  writeStored,
+  type Scheme,
+} from "./theme";
 import lintDefaults from "../lint-rules.default.json";
 
 // 个人阈值(lint-rules.local.json,gitignore):存在就叠加覆盖公共默认
@@ -189,14 +201,49 @@ export default function App() {
   };
   const [look] = useState(restoreLook);
   const [form, setForm] = useState<string>(look.form);
-  const [palette, setPalette] = useState<string>(look.palette);
+  // 主题开关的初值(必须在配色之前定):
+  //   ① 用户显式选过 → 听他的;
+  //   ② 没选过但存档里那套配色本身就是浅色(他挑过「瑞士·亮」)→ 开关停在浅色一侧;
+  //   ③ 都没有 → 跟随系统 prefers-color-scheme(取不到按深色)。
+  const [scheme, setScheme] = useState<Scheme>(
+    () => readSchemeChoice() ?? (look.palette ? schemeOf(look.palette) : systemScheme()),
+  );
+  // 配色的初值要和主题开关对齐:系统偏好浅色、但配色没存档时,得落到浅色组的那套,
+  // 不能停在「瑞士·暗」—— 否则开关显示浅色、界面却是深色,自己跟自己打架。
+  const [palette, setPalette] = useState<string>(() => {
+    const stored = look.palette;
+    if (stored && schemeOf(stored) === scheme) return stored;
+    if (scheme === "light") return readStored(THEME_KEYS.LAST_LIGHT, DEFAULT_LIGHT_PALETTE);
+    return stored || DEFAULT_DARK_PALETTE;
+  });
+
+  /** 切主题:选一套该明暗的配色(优先上次用的),并记住这次的选择 */
+  const pickScheme = (next: Scheme) => {
+    setScheme(next);
+    writeSchemeChoice(next);
+    const lastKey = next === "light" ? THEME_KEYS.LAST_LIGHT : THEME_KEYS.LAST_DARK;
+    const fallback = next === "light" ? DEFAULT_LIGHT_PALETTE : DEFAULT_DARK_PALETTE;
+    const last = readStored(lastKey, fallback);
+    // 存档里那套如果已经不是这个明暗(比如配色表改过),退回该组默认
+    setPalette(schemeOf(last) === next ? last : fallback);
+  };
+
+  /** 手动挑配色:顺手把主题开关也切到对应的一侧,并记住这套 */
+  const pickPalette = (id: string) => {
+    setPalette(id);
+    const s = schemeOf(id);
+    setScheme(s);
+    writeSchemeChoice(s);
+    writeStored(s === "light" ? THEME_KEYS.LAST_LIGHT : THEME_KEYS.LAST_DARK, id);
+  };
+
   // 换风格 = 连它的「原配」配色一起换上。
   // 曾经在这里加过「你手动挑过配色就不换」的判断,结果是:只要挑过一次配色,
   // 自动匹配就再也不触发,功能等于不存在。换风格本来就是「整套换掉」的动作,
   // 想要别的配色,换完再点一下配色下拉就行。
   const pickForm = (id: string) => {
     setForm(id);
-    setPalette(FORMS.find((f) => f.id === id)?.mate ?? "");
+    pickPalette(FORMS.find((f) => f.id === id)?.mate ?? "");
   };
 
   useEffect(() => {
@@ -205,13 +252,17 @@ export default function App() {
     else delete el.dataset.form;
     if (palette) el.dataset.palette = palette;
     else delete el.dataset.palette;
+    // 明暗写进 data-scheme:配色本身已决定颜色,这里只给「明暗相关的细节修正」用
+    // (比如画布浮层的玻璃底、滚动条、原生控件),CSS 里按需挂规则。
+    el.dataset.scheme = scheme;
+    el.style.colorScheme = scheme;
     try {
       localStorage.setItem(FORM_KEY, form);
       localStorage.setItem(PALETTE_KEY, palette);
     } catch {
       // 隐私模式:外观只在本次会话生效
     }
-  }, [form, palette]);
+  }, [form, palette, scheme]);
 
   // 首次挂载:恢复上次的编排 + 字幕稿 + 视频
   // 首次打开引导:什么都没有的新用户,先把 60 秒示例端到面前。
@@ -1239,7 +1290,9 @@ export default function App() {
         form={form}
         onForm={pickForm}
         palette={palette}
-        onPalette={setPalette}
+        onPalette={pickPalette}
+        scheme={scheme}
+        onScheme={pickScheme}
         hasDoc={!!overlay}
         font={overlay?.font ?? ""}
         onFont={(f) => {
@@ -1256,8 +1309,7 @@ export default function App() {
           pushHistory(true);
           setOverlay((o) => (o ? { ...o, inkColor: c || undefined } : o));
         }}
-        onUnifyAccent={(accent) => {
-          // 批量改写:把每张卡的 accent 参数直接改掉(不是盖一层),
+        onUnifyAccent={(accent) => {          // 批量改写:把每张卡的 accent 参数直接改掉(不是盖一层),
           // 改完各卡参数面板显示的就是新值,之后还能单张调回去。force 压一步撤销。
           pushHistory(true);
           setOverlay((o) =>

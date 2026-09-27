@@ -1237,6 +1237,41 @@ input[type="range"]::-moz-range-thumb {
   cursor: wait;
 }
 
+/* ---- 顶栏主题开关(浅色 / 深色) ---- */
+.tb-theme {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  margin-right: 8px;
+  background: transparent;
+  border: 1px solid var(--hairline-strong);
+  border-radius: 999px;
+  font-size: 12.5px;
+  color: var(--ink-muted);
+  white-space: nowrap;
+  transition: background 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+.tb-theme:hover {
+  background: var(--fill-subtle);
+  color: var(--ink);
+}
+.tb-theme-ic {
+  font-size: 14px;
+  line-height: 1;
+}
+/* 齿轮面板里的「界面主题」分段按钮 */
+.tb-scheme-seg {
+  display: inline-flex;
+  gap: 6px;
+}
+.tb-scheme-seg .tb-mini.is-on {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+}
+
 /* 更换特效下拉 */
 .kind-select {
   width: 100%;

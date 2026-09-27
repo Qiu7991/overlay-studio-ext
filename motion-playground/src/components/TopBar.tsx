@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { ACCENT_OPTIONS } from "../effects/hud/accent";
 import { CUSTOM_FONTS } from "../fonts";
 import { STAGES, type Aspect } from "../stage";
+import type { Scheme } from "../theme";
 import type { StyleProfile } from "../styles";
 
 export type StudioTab = "edit" | "library";
@@ -95,6 +96,9 @@ interface TopBarProps {
   onForm: (id: string) => void;
   palette: string;
   onPalette: (id: string) => void;
+  /** 界面主题:浅色 / 深色(在两组配色之间切) */
+  scheme: Scheme;
+  onScheme: (s: Scheme) => void;
   /* 偏好设置(齿轮面板) */
   hasDoc: boolean;
   font: string;
@@ -226,6 +230,8 @@ export function TopBar({
   onForm,
   palette,
   onPalette,
+  scheme,
+  onScheme,
   hasDoc,
   font,
   onFont,
@@ -337,6 +343,18 @@ export function TopBar({
 
       <span className="tb-flex" />
 
+      {/* 界面主题开关:浅色 / 深色。放顶栏是因为它一眼能看见、一下就切;
+          细分到具体哪套配色仍然在齿轮面板里。 */}
+      <button
+        className="tb-theme"
+        onClick={() => onScheme(scheme === "dark" ? "light" : "dark")}
+        title={scheme === "dark" ? "切到浅色界面(只改编辑台,不影响导出画面)" : "切到深色界面(只改编辑台,不影响导出画面)"}
+        aria-label="切换界面主题"
+      >
+        <span className="tb-theme-ic">{scheme === "dark" ? "☀" : "☾"}</span>
+        <span className="tb-theme-tx">{scheme === "dark" ? "浅色" : "深色"}</span>
+      </button>
+
       {/* 熔接按钮组 */}
       <div className="tb-group">
         <div className="tb-prefs" ref={prefsRef}>
@@ -435,6 +453,26 @@ export function TopBar({
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div className="tb-prefs-row">
+                <span>界面主题</span>
+                <span className="tb-prefs-ctl tb-scheme-seg">
+                  <button
+                    className={`tb-mini ${scheme === "dark" ? "is-on" : ""}`}
+                    onClick={() => onScheme("dark")}
+                    title="深色界面"
+                  >
+                    🌙 深色
+                  </button>
+                  <button
+                    className={`tb-mini ${scheme === "light" ? "is-on" : ""}`}
+                    onClick={() => onScheme("light")}
+                    title="浅色界面"
+                  >
+                    ☀ 浅色
+                  </button>
+                </span>
               </div>
 
               <div className="tb-prefs-row">

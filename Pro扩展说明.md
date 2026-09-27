@@ -14,6 +14,7 @@
 | **竖版 9:16**(基础版不支持) | 编排顶层 `aspect` 字段 + 编辑台画幅下拉 + 竖屏版式重排 + 导出 1080×1920 | ✅ 实机验证 |
 | **风格复用**(自主学习风格,下次继续复用) | 「风格档案」:存 / 套 / 导出 / 导入,存主题·强调色·字体·文字色·画幅·倍速 | ✅ 实机验证 |
 | **更聪明的编排方法论**(几个月打磨的方法论) | 更新 `overlay-fx-generator` skill:新增结构/转场/爆点/氛围四节的选卡规则与画幅、风格复用两章 | ✅ 四入口同步 |
+| **界面浅色 / 深色主题切换** | 顶栏一键切换 + 齿轮面板分段按钮,自动跟随系统偏好 | ✅ 实机验证 |
 | 透明层导出 / 完整编辑台 / AI 编排 | 开源版本就有,保持不动 | ✅ 回归通过 |
 
 > 说明:PRO 版的实际卡片库是作者的私有沉淀(102 张),这里做的是**同架构下的等价能力实现** ——
@@ -98,7 +99,27 @@
 
 ---
 
-## 五、验收证据(全部实机跑过)
+## 五、界面主题:浅色 / 深色
+
+编辑台外壳支持一键切浅色和深色,**只影响编辑台,画布与导出画面完全不变**(那两样是视频内容,和界面无关)。
+
+| 入口 | 位置 |
+|---|---|
+| **顶栏胶囊按钮** | 顶栏右侧(「全局设置」左边):点一下在浅色/深色之间切 |
+| **齿轮面板分段按钮** | ⚙ 全局设置 →「界面主题」→ 🌙 深色 / ☀ 浅色 |
+
+细节:
+
+- **浅色组**:瑞士·亮(默认浅色)/ 象牙陶土 / 冷灰白 / 系统蓝·浅 / Material 紫
+- **深色组**:瑞士·暗(默认深色)/ 终端荧光 / 经典灰蓝 / 线框手账 / 荒漠 / 雾林 / 系统蓝·暗 / 深空紫
+- 来回切**不丢**你挑过的配色:浅色一侧和深色一侧各自记住上次用的那套
+- 首次进入**跟随系统偏好**(macOS/Windows 的浅色/深色设置);点过一次就以你的选择为准
+- 手动在齿轮里挑配色时,主题开关会自动跳到对应的一侧
+- 选择存在 `localStorage`(`overlayStudioScheme`),刷新/重开都记得
+
+---
+
+## 六、验收证据(全部实机跑过)
 
 | 项 | 结果 |
 |---|---|
@@ -108,6 +129,7 @@
 | 竖屏导出 | 实跑 10s / 300 帧:`1080×1920` / ProRes 4444 / `yuva444p12le` / 29.97fps,alpha 通道有效 |
 | Pro 示例导出 | 实跑 12s / 360 帧:1920×1080 ProRes 4444,含 `aurora-glow`+`grid-drift`+`warp-title`+`org-chart`+`mind-map` |
 | 风格复用 | UI 实机:存档 → 档案胶囊出现 → 套用成功,localStorage 落盘正确 |
+| 界面主题切换 | UI 实机:顶栏按钮与齿轮分段按钮都能切;浅色五套配色逐个验算令牌;刷新后记住选择;零控制台报错 |
 | 编排体检 | `npm run -s lint:overlay -- public/demo/demo-pro.json --duration 36` → 无 error、无 warn |
 
 ---
@@ -136,6 +158,7 @@ motion-playground/src/effects/hud/OrgChart.tsx / LayeredStack.tsx / MatrixGrid.t
                                 / AuroraGlow.tsx / GrainBed.tsx / GridDrift.tsx
 motion-playground/src/effects/hud/pro-cards-a.css / pro-cards-b.css / pro-cards-c.css
 motion-playground/src/styles.ts          # 风格档案:存/套/导入/导出
+motion-playground/src/theme.ts           # 界面主题:浅色/深色分组、跟随系统、偏好记忆
 motion-playground/public/demo/demo-pro.json  # 「🧩 示例·Pro」的数据
 ```
 
@@ -146,7 +169,9 @@ src/stage.ts              两套画幅的唯一源头(16:9 / 9:16)
 src/overlay/types.ts      OverlayDoc.aspect
 src/overlay/lint.ts       新卡的卡内节奏规格 + 转场/底噪的驻留豁免
 src/components/Canvas.tsx      画布跟随画幅 + data-aspect
-src/components/TopBar.tsx      画幅下拉 + 风格复用面板 + 「🧩 示例·Pro」
+src/components/TopBar.tsx      画幅下拉 + 风格复用面板 + 界面主题开关 + 「🧩 示例·Pro」
+src/App.tsx                    主题开关状态与配色分组联动(scheme / pickScheme / pickPalette)
+src/App.css                    主题开关与分段按钮样式
 src/effects/hud/hud.css        竖屏版式重排 + 引入三个 pro-cards CSS
 src/effects/registry.ts        15 张新卡注册进 4 个新分组
 src/ExportView.tsx / scripts/export-frames.mjs   导出跟随画幅
