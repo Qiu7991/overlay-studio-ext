@@ -42,6 +42,7 @@ const errors = issues.filter((i) => i.level === "error");
 const warns = issues.filter((i) => i.level === "warn");
 
 console.log(`\n🔍 overlay 检查:${path.basename(file)}${doc ? ` · ${doc.cards.length} 张卡` : ""}`);
+if (doc?.aspect === "9:16") console.log("   画幅:竖屏 9:16(1080×1920)");
 if (!issues.length) {
   console.log("✅ 没有发现问题\n");
 } else {

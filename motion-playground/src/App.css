@@ -197,6 +197,44 @@
   background: var(--on-accent);
 }
 
+/* 齿轮面板里的「风格复用」一行:档案名输入 + 按钮挤在一格里 */
+.tb-style-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.tb-style-name {
+  width: 118px;
+  min-width: 0;
+}
+/* 已存档案:一行一个胶囊,点名字套用 */
+.tb-prefs-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 2px 0 6px;
+}
+.tb-style-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px 2px 8px;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+}
+.tb-style-chip-name {
+  background: none;
+  border: 0;
+  color: var(--ink);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 0;
+}
+.tb-style-chip-name:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ============ 中栏:画布 ============ */
 .stage-col {
   display: flex;

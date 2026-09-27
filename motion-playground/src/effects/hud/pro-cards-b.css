@@ -1,0 +1,336 @@
+/* ============================================================
+   Pro 扩展 B 组 · 5 张卡共用样式(类名前缀一律 xsb-)
+   1 CycleLoop 循环闭环 / 2 WarpTitle 章节转场 / 3 SplitWipe 分屏划开
+   4 FlashCut 闪切转场 / 5 ImpactBurst 情绪爆点
+
+   约定:颜色只用主题令牌;transition / animation 的 timing function
+   统一 var(--ease) 或 cubic-bezier(0.22, 1, 0.36, 1)(持续循环除外)。
+   ============================================================ */
+
+/* ============ 1. CycleLoop 循环闭环 ============ */
+.xsb-cyc {
+  flex-direction: column; align-items: center; color: var(--hud-ink);
+  opacity: 0; transition: opacity 560ms var(--ease);
+}
+.xsb-cyc.is-in { opacity: 1; }
+.xsb-cyc-ring {
+  position: relative; width: 900px; height: 660px;
+  transform: scale(0.93); transition: transform 780ms var(--ease);
+}
+.xsb-cyc.is-in .xsb-cyc-ring { transform: none; }
+.xsb-cyc-ring svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.xsb-cyc-track { fill: none; stroke: var(--hud-track); stroke-width: 3; }
+/* 走满一圈后残留的慢速虚线环:循环感 */
+.xsb-cyc-orbit {
+  fill: none; stroke: var(--hud-acc); stroke-width: 2; stroke-dasharray: 3 26;
+  opacity: 0; transform-box: fill-box; transform-origin: center;
+  transition: opacity 800ms var(--ease);
+}
+.xsb-cyc.is-done .xsb-cyc-orbit { opacity: 0.4; animation: xsb-cyc-spin 26s linear infinite; }
+@keyframes xsb-cyc-spin { to { transform: rotate(360deg); } }
+
+.xsb-cyc-arc { fill: none; stroke: var(--hud-acc); stroke-width: 5; stroke-linecap: round; }
+
+.xsb-cyc-pt { opacity: 0.48; transition: opacity 460ms var(--ease); }
+.xsb-cyc-pt.is-on { opacity: 1; }
+.xsb-cyc-halo {
+  fill: color-mix(in srgb, var(--hud-acc) 22%, transparent);
+  opacity: 0; transform-box: fill-box; transform-origin: center; transform: scale(0.45);
+  transition: opacity 460ms var(--ease), transform 580ms var(--ease);
+}
+.xsb-cyc-pt.is-on .xsb-cyc-halo { opacity: 1; transform: none; }
+.xsb-cyc-dot {
+  fill: var(--hud-node); stroke: var(--hud-track); stroke-width: 3;
+  transition: fill 480ms var(--ease), stroke 480ms var(--ease);
+}
+.xsb-cyc-pt.is-on .xsb-cyc-dot { fill: var(--hud-acc); stroke: var(--hud-acc); }
+.xsb-cyc-lb {
+  font-size: 28px; font-weight: 600; fill: var(--hud-muted);
+  transition: fill 480ms var(--ease);
+}
+.xsb-cyc-pt.is-on .xsb-cyc-lb { fill: var(--hud-ink); }
+
+.xsb-cyc-center {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center; pointer-events: none;
+}
+.xsb-cyc-center::before {
+  content: ""; width: 56px; height: 4px; border-radius: 2px; background: var(--hud-acc);
+  margin-bottom: 18px; transform: scaleX(0);
+  transition: transform 660ms var(--ease) 140ms;
+}
+.xsb-cyc.is-in .xsb-cyc-center::before { transform: none; }
+.xsb-cyc-center-t {
+  font-size: 46px; font-weight: 800; letter-spacing: 0.02em; color: var(--hud-ink);
+}
+
+/* ============ 2. WarpTitle 章节转场(全屏) ============ */
+.xsb-warp {
+  position: absolute; inset: 0; overflow: hidden; z-index: 60;
+  color: var(--hud-ink); pointer-events: none;
+  transform: scale(var(--hud-scale, 1)); transform-origin: center;
+}
+.xsb-warp-bg {
+  position: absolute; inset: 0; background: var(--hud-canvas);
+  opacity: 0; transition: opacity 460ms var(--ease);
+}
+.xsb-warp.is-in .xsb-warp-bg { opacity: 1; }
+.xsb-warp-wash {
+  position: absolute; inset: 0; opacity: 0;
+  background: radial-gradient(
+    56% 72% at 50% 50%,
+    color-mix(in srgb, var(--hud-acc) 36%, transparent),
+    transparent 72%
+  );
+}
+/* 光带:一条满高的光柱从左扫到右,横扫时压亮画面 */
+.xsb-warp-band { position: absolute; top: -8%; bottom: -8%; left: 0; width: 620px; margin-left: -310px; opacity: 0; }
+.xsb-warp-glow {
+  position: absolute; inset: 0; opacity: 0.85;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--hud-acc) 58%, transparent),
+    transparent
+  );
+  filter: blur(14px);
+}
+.xsb-warp-core {
+  position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; margin-left: -2px;
+  background: color-mix(in srgb, var(--hud-acc) 82%, #ffffff);
+}
+
+.xsb-warp-mid {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center; pointer-events: auto;
+}
+.xsb-warp-idx {
+  font-family: "SF Mono", ui-monospace, monospace;
+  font-size: 224px; font-weight: 700; line-height: 0.95; letter-spacing: 0.02em;
+  color: color-mix(in srgb, var(--hud-ink) 9%, transparent);
+  -webkit-text-stroke: 3px color-mix(in srgb, var(--hud-ink) 42%, transparent);
+  opacity: 0;
+}
+.xsb-warp-title {
+  font-size: 106px; font-weight: 900; line-height: 1.06; letter-spacing: -0.015em;
+  margin-top: 6px; color: var(--hud-ink); opacity: 0;
+}
+.xsb-warp-sub {
+  font-size: 32px; font-weight: 500; letter-spacing: 0.18em;
+  color: var(--hud-muted); margin-top: 26px; opacity: 0;
+}
+
+/* 光带横扫(起点→终点,用缓动) */
+.xsb-warp.is-in .xsb-warp-band {
+  animation: xsb-warp-sweep 1500ms cubic-bezier(0.4, 0, 0.2, 1) 100ms both;
+}
+@keyframes xsb-warp-sweep {
+  0% { transform: translateX(-340px); opacity: 0; }
+  9% { opacity: 1; }
+  86% { opacity: 1; }
+  100% { transform: translateX(2400px); opacity: 0; }
+}
+.xsb-warp.is-in .xsb-warp-wash {
+  animation: xsb-warp-flash 1500ms cubic-bezier(0.22, 1, 0.36, 1) 100ms both;
+}
+@keyframes xsb-warp-flash {
+  0% { opacity: 0; }
+  40% { opacity: 0.85; }
+  100% { opacity: 0; }
+}
+.xsb-warp.is-in .xsb-warp-idx {
+  animation: xsb-warp-in-idx 1600ms cubic-bezier(0.22, 1, 0.36, 1) 40ms both;
+}
+@keyframes xsb-warp-in-idx {
+  0% { opacity: 0; transform: translateY(30px) scale(1.08); }
+  34% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+/* 标题:进场后,在光带扫过中心时轻微放大推进,再回正 */
+.xsb-warp.is-in .xsb-warp-title {
+  animation: xsb-warp-in-title 1600ms cubic-bezier(0.22, 1, 0.36, 1) 140ms both;
+}
+@keyframes xsb-warp-in-title {
+  0% { opacity: 0; transform: translateY(26px) scale(0.97); }
+  30% { opacity: 1; transform: translateY(0) scale(1); }
+  52% { opacity: 1; transform: translateY(0) scale(1.035); }
+  74% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+.xsb-warp.is-in .xsb-warp-sub {
+  animation: xsb-warp-in-sub 1500ms cubic-bezier(0.22, 1, 0.36, 1) 320ms both;
+}
+@keyframes xsb-warp-in-sub {
+  0% { opacity: 0; transform: translateY(16px); }
+  46% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ============ 3. SplitWipe 分屏划开(全屏) ============ */
+/* 色板是纯色,不吃亮暗主题:转场瞬间的硬切块本来就是画面上的"板" */
+.xsb-sw {
+  position: absolute; inset: 0; overflow: hidden; z-index: 60;
+  color: var(--hud-ink); pointer-events: none;
+  transform: scale(var(--hud-scale, 1)); transform-origin: center;
+}
+.xsb-sw-base { position: absolute; inset: 0; background: var(--hud-canvas); }
+.xsb-sw-mid {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center; gap: 26px;
+  pointer-events: auto;
+}
+.xsb-sw-label {
+  font-family: "SF Mono", ui-monospace, monospace;
+  font-size: 24px; font-weight: 700; letter-spacing: 0.34em; text-transform: uppercase;
+  color: var(--hud-acc); opacity: 0;
+}
+.xsb-sw-text {
+  font-size: 118px; font-weight: 900; line-height: 1.05; letter-spacing: -0.02em;
+  color: var(--hud-ink); opacity: 0;
+}
+.xsb-sw-panel { position: absolute; top: 0; bottom: 0; width: 50%; }
+.xsb-sw-panel.a { left: 0; background: var(--hud-acc); }
+.xsb-sw-panel.b { left: 50%; background: #12121a; }
+.xsb-sw-seam {
+  position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; margin-left: -1.5px;
+  background: var(--hud-acc);
+  box-shadow: 0 0 26px 5px color-mix(in srgb, var(--hud-acc) 52%, transparent);
+  opacity: 0; transform: scaleY(0.02); transform-origin: center;
+}
+
+/* 中缝先亮一条细线 → 两块色板向两侧划开 → 露出大字 → 继续划走 */
+.xsb-sw.is-in .xsb-sw-seam {
+  animation: xsb-sw-seam 1600ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes xsb-sw-seam {
+  0% { opacity: 0; transform: scaleY(0.02); }
+  10% { opacity: 1; transform: scaleY(1); }
+  42% { opacity: 0.85; }
+  66% { opacity: 0; }
+  100% { opacity: 0; }
+}
+.xsb-sw.is-in .xsb-sw-panel.a {
+  animation: xsb-sw-out-a 1250ms cubic-bezier(0.4, 0, 0.2, 1) 160ms both;
+}
+@keyframes xsb-sw-out-a {
+  from { transform: translateX(0); }
+  to { transform: translateX(-102%); }
+}
+.xsb-sw.is-in .xsb-sw-panel.b {
+  animation: xsb-sw-out-b 1250ms cubic-bezier(0.4, 0, 0.2, 1) 160ms both;
+}
+@keyframes xsb-sw-out-b {
+  from { transform: translateX(0); }
+  to { transform: translateX(102%); }
+}
+.xsb-sw.is-in .xsb-sw-label {
+  animation: xsb-sw-in-label 1400ms cubic-bezier(0.22, 1, 0.36, 1) 380ms both;
+}
+@keyframes xsb-sw-in-label {
+  0% { opacity: 0; transform: translateY(10px); }
+  40% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+.xsb-sw.is-in .xsb-sw-text {
+  animation: xsb-sw-in-text 1400ms cubic-bezier(0.22, 1, 0.36, 1) 460ms both;
+}
+@keyframes xsb-sw-in-text {
+  0% { opacity: 0; transform: translateY(20px) scale(0.985); }
+  42% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ============ 4. FlashCut 闪切转场(全屏) ============ */
+.xsb-fc {
+  position: absolute; inset: 0; overflow: hidden; z-index: 60;
+  color: var(--hud-ink); pointer-events: none;
+  transform: scale(var(--hud-scale, 1)); transform-origin: center;
+}
+.xsb-fc-flash { position: absolute; inset: 0; opacity: 0; }
+.xsb-fc[data-flash="white"] .xsb-fc-flash { background: #ffffff; }
+.xsb-fc[data-flash="dark"] .xsb-fc-flash { background: #08080d; }
+.xsb-fc[data-flash="accent"] .xsb-fc-flash {
+  background: color-mix(in srgb, var(--hud-acc) 82%, #ffffff);
+}
+.xsb-fc-ring {
+  position: absolute; left: 50%; top: 50%;
+  width: 2000px; height: 2000px; margin: -1000px 0 0 -1000px;
+  opacity: 0;
+}
+.xsb-fc-ring svg { width: 100%; height: 100%; display: block; }
+.xsb-fc-ring circle { fill: none; }
+.xsb-fc-r1 { stroke: var(--hud-acc); stroke-width: 9; }
+.xsb-fc-r2 { stroke: color-mix(in srgb, var(--hud-ink) 55%, transparent); stroke-width: 3; }
+.xsb-fc-text {
+  position: absolute; left: 50%; top: 50%; white-space: nowrap;
+  font-size: 78px; font-weight: 900; letter-spacing: 0.02em; color: var(--hud-ink);
+  text-shadow: 0 8px 34px rgba(0, 0, 0, 0.4);
+  opacity: 0; transform: translate(-50%, -50%) scale(0.84); pointer-events: auto;
+}
+
+/* 全屏瞬间闪一下 + 冲击环快速扩散淡出 + 短文字后半段弹出 */
+.xsb-fc.is-in .xsb-fc-flash {
+  animation: xsb-fc-flash 640ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes xsb-fc-flash {
+  0% { opacity: 0.97; }
+  36% { opacity: 0.5; }
+  100% { opacity: 0; }
+}
+.xsb-fc.is-in .xsb-fc-ring {
+  animation: xsb-fc-ring 820ms cubic-bezier(0.22, 1, 0.36, 1) 60ms both;
+}
+@keyframes xsb-fc-ring {
+  0% { opacity: 0.92; transform: scale(0.07); }
+  100% { opacity: 0; transform: scale(2.9); }
+}
+.xsb-fc.is-in .xsb-fc-text {
+  animation: xsb-fc-in-text 900ms cubic-bezier(0.34, 1.42, 0.64, 1) 260ms both;
+}
+@keyframes xsb-fc-in-text {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.84); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* ============ 5. ImpactBurst 情绪爆点 ============ */
+.xsb-ib {
+  color: var(--hud-ink);
+  opacity: 0; transition: opacity 320ms var(--ease);
+}
+.xsb-ib.is-in { opacity: 1; }
+/* 强调色吃满屏:铺到整个 1920×1080 舞台(锚点卡本体只有内容那么大) */
+.xsb-ib-wash {
+  position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px;
+  margin: -540px 0 0 -960px; opacity: 0; pointer-events: none;
+  background: radial-gradient(
+    46% 62% at 50% 50%,
+    color-mix(in srgb, var(--hud-acc) 62%, transparent),
+    transparent 70%
+  );
+}
+.xsb-ib-inner {
+  position: relative; width: 1000px; height: 1000px;
+  display: flex; align-items: center; justify-content: center;
+}
+.xsb-ib.is-in .xsb-ib-inner { animation: xsb-ib-shake 520ms cubic-bezier(0.22, 1, 0.36, 1); }
+@keyframes xsb-ib-shake {
+  0% { transform: translate(0, 0); }
+  16% { transform: translate(-7px, 3px); }
+  36% { transform: translate(6px, -3px); }
+  56% { transform: translate(-4px, 2px); }
+  76% { transform: translate(2px, -1px); }
+  100% { transform: translate(0, 0); }
+}
+.xsb-ib-rays { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.xsb-ib-rays line { stroke: var(--hud-acc); stroke-width: 3; stroke-linecap: round; }
+.xsb-ib-mid {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center; gap: 20px;
+}
+.xsb-ib-text {
+  font-size: 152px; font-weight: 900; line-height: 1; letter-spacing: -0.02em;
+  color: var(--hud-ink); max-width: 1000px;
+}
+.xsb-ib-sub {
+  font-size: 34px; font-weight: 600; letter-spacing: 0.14em; color: var(--hud-muted);
+}

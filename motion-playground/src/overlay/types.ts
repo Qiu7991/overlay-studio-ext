@@ -1,4 +1,5 @@
 import { EFFECTS } from "../effects/registry";
+import { normalizeAspect, type Aspect } from "../stage";
 
 /** 时间轴上的一张动效卡 */
 export interface OverlayCard {
@@ -39,6 +40,8 @@ export function outroFade(t: number, card: { start: number; end: number }): numb
 /** Overlay 工程文件(Skill 生成 / Studio 导入导出) */
 export interface OverlayDoc {
   version: 1;
+  /** 画幅:横屏 16:9(默认)/ 竖屏 9:16。编辑台、导出页、导出脚本共用这一处取值 */
+  aspect?: Aspect;
   theme?: "dark" | "light"; // 全局主题,卡片 params.theme 可覆盖
   /** 文字可读性光晕(默认关;true 才开)——开了字会发虚,按画面自己定 */
   glow?: boolean;
@@ -113,6 +116,7 @@ export function parseOverlay(raw: unknown): {
       dropped: dropped.length ? dropped : undefined,
       doc: {
         version: 1,
+        aspect: normalizeAspect(o.aspect),
         theme,
         glow: o.glow === true,
         cam: typeof o.cam === "string" && o.cam ? o.cam : undefined,

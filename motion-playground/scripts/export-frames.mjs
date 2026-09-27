@@ -31,7 +31,11 @@ const {
   keepFrames = false, // true = 保留 PNG 中间目录
 } = job;
 
-const STAGE = { w: 1920, h: 1080 };
+// 画幅来自编排(doc.aspect):横屏 1920×1080 / 竖屏 1080×1920。
+// 必须和编辑台、导出页同源 —— 这里写死的话,竖屏编排会渲染在 1920×1080 视口里,
+// 卡片按 1080 宽排版、四周一圈透明,成片尺寸也是错的。
+const PORTRAIT = doc?.aspect === "9:16";
+const STAGE = PORTRAIT ? { w: 1080, h: 1920 } : { w: 1920, h: 1080 };
 
 // NTSC 29.97 的真身是 30000/1001(=29.970029970…),写成小数会有微小误差:
 // 帧号/时钟用精确值算,传给 ffmpeg 的帧率用分数字符串,避免它按 2997/100 编码
@@ -459,6 +463,14 @@ try {
       "terminal-3d": "type", "type-shift": "type",
       // 结构/步骤/清单/名牌
       "chapter-bar": "chime", checklist: "ding", "step-timeline": "click", "entity-chips": "click",
+      // Pro 扩充:信息结构(逐支落位)
+      "org-chart": "click", "layered-stack": "click", "matrix-grid": "click",
+      "mind-map": "click", "funnel-flow": "rise", "cycle-loop": "click",
+      // Pro 扩充:转场 / 爆点
+      "warp-title": "whoosh", "split-wipe": "whoosh", "flash-cut": "impact",
+      "impact-burst": "impact", "shake-slam": "impact", "pulse-ring": "rise",
+      // Pro 扩充:氛围底噪不配音效(它铺满整段,配了会一直响)
+      "aurora-glow": null, "grain-bed": null, "grid-drift": null,
       // 常驻字幕层不配音效
       "caption-track": null,
     };

@@ -15,6 +15,16 @@ import { parseOverlay, type OverlayCard, type OverlayDoc } from "./overlay/types
 import { parseSrt, type SrtLine } from "./overlay/srt";
 import { lintOverlay, mergeLintConfig, type LintConfig, type LintIssue } from "./overlay/lint";
 import { uploadErrText } from "./uploadErr";
+import {
+  applyProfile,
+  loadStyles,
+  parseProfile,
+  profileFromDoc,
+  saveStyles,
+  upsertStyle,
+  type StyleProfile,
+} from "./styles";
+import { normalizeAspect, type Aspect } from "./stage";
 import lintDefaults from "../lint-rules.default.json";
 
 // 个人阈值(lint-rules.local.json,gitignore):存在就叠加覆盖公共默认
@@ -31,9 +41,30 @@ import "./App.css";
 
 /** 新卡默认多长:整段演示类的卡要 15 秒才够看完一轮,其余 5 秒。
     右栏那颗「加到 x:xx,时长 n 秒」按钮和真正的插入逻辑共用这一个数,
-    避免文案说 5 秒、插进去却是别的。 */
+    避免文案说 5 秒、插进去却是别的。
+    Pro 扩充后按用途分档:
+      · 满屏运镜 / 氛围底噪 / 组织架构这类整段卡 → 15s
+      · 转场(章节转场/划开/闪切/爆点)是一次性动作 → 2s
+      · 其余内容卡 → 5s */
 function addSecFor(kind: string) {
-  return kind === "focus-card" ? 15 : 5;
+  if (
+    kind === "focus-card" ||
+    kind === "aurora-glow" ||
+    kind === "grain-bed" ||
+    kind === "grid-drift" ||
+    kind === "org-chart" ||
+    kind === "mind-map"
+  )
+    return 15;
+  if (
+    kind === "warp-title" ||
+    kind === "split-wipe" ||
+    kind === "flash-cut" ||
+    kind === "impact-burst" ||
+    kind === "shake-slam"
+  )
+    return 2;
+  return 5;
 }
 
 export default function App() {
@@ -85,6 +116,13 @@ export default function App() {
 
   // ---- 学习闭环:记住本次导入的「AI 初选」,导出时连同终选一起落盘 ----
   const originRef = useRef<OverlayDoc | null>(null);
+
+  // ---- 风格复用:档案列表(存 localStorage,可导出/导入文件) ----
+  const [styles, setStyles] = useState<StyleProfile[]>(() => loadStyles());
+  const patchStyles = (next: StyleProfile[]) => {
+    setStyles(next);
+    saveStyles(next);
+  };
 
   // ---- 检查器:导入 JSON 时自动跑,只提醒不阻断;忽略标记写进卡片随 JSON 持久化 ----
   const [lintIssues, setLintIssues] = useState<LintIssue[]>([]);
@@ -611,6 +649,35 @@ export default function App() {
     }
   };
 
+  /** 载入 Pro 扩充演示(信息结构 / 转场 / 爆点 / 氛围底噪),没有视频也能看 */
+  const handleLoadDemoPro = async () => {
+    if (overlay?.cards.length && !confirm("载入 Pro 示例会替换当前编排(可撤销),继续吗?")) return;
+    try {
+      const jsonText = await fetch("/demo/demo-pro.json").then((r) => r.text());
+      const { doc, error, dropped } = parseOverlay(jsonText);
+      if (error || !doc) {
+        alert(`❌ Pro 示例载入失败:${error}`);
+        return;
+      }
+      if (dropped?.length)
+        console.warn("[Pro 示例] 跳过了认不出的卡:", dropped.map((d) => `${d.kind}×${d.n}`).join(", "));
+      pushHistory(true);
+      camClearedRef.current = false;
+      setOverlay(doc);
+      originRef.current = structuredClone(doc);
+      setSelCardId(doc.cards[0]?.id ?? null);
+      setTab("edit");
+      seek(0);
+      setPlaying(false);
+      // 不传 duration:Pro 示例自带 36s 编排,而 durRef 此刻还是上一条视频的时长,
+      // 传进去会把整段示例报成「超过视频时长」的假 error(试过,确实会红一片)。
+      setLintIssues(lintOverlay(doc, LINT_CFG));
+      setLintCollapsed(false);
+    } catch (e) {
+      alert(`❌ Pro 示例载入失败:${e}`);
+    }
+  };
+
   const handleImportSrt = async (file: File | null) => {
     if (!file) return;
     const lines = parseSrt(await file.text());
@@ -761,6 +828,65 @@ export default function App() {
       theme,
       cards: overlay.cards.map((c) => ({ ...c, params: { ...c.params, theme } })),
     });
+  };
+
+  // ---- 画幅(Pro):横屏 16:9 / 竖屏 9:16。写进编排,预览与导出同步变尺寸 ----
+  const handleAspect = (a: Aspect) => {
+    pushHistory(true);
+    setOverlay((o) => (o ? { ...o, aspect: normalizeAspect(a) } : o));
+  };
+
+  // ---- 风格复用(Pro):存 / 套 / 删 / 导出 / 导入 ----
+  // 当前编排里出现最多的强调色 —— 当作这期的「主色」存进档案
+  const dominantAccent = (): string | undefined => {
+    if (!overlay) return undefined;
+    const n = new Map<string, number>();
+    for (const c of overlay.cards) {
+      const a = c.params?.accent;
+      if (typeof a === "string" && a) n.set(a, (n.get(a) ?? 0) + 1);
+    }
+    return [...n].sort((x, y) => y[1] - x[1])[0]?.[0];
+  };
+  const handleSaveStyle = (name: string) => {
+    if (!name.trim()) return;
+    const p = profileFromDoc(name.trim(), overlay, {
+      accent: dominantAccent(),
+      fxScale,
+      animSpeed,
+    });
+    patchStyles(upsertStyle(styles, p));
+  };
+  const handleApplyStyle = (name: string) => {
+    const p = styles.find((s) => s.name === name);
+    if (!p || !overlay) return;
+    pushHistory(true);
+    setOverlay((o) => (o ? applyProfile(o, p) : o));
+    if (typeof p.fxScale === "number") setFxScale(p.fxScale);
+    if (typeof p.animSpeed === "number") setAnimSpeed(p.animSpeed);
+  };
+  const handleDeleteStyle = (name: string) => {
+    patchStyles(styles.filter((s) => s.name !== name));
+  };
+  const handleExportStyle = (name: string) => {
+    const p = styles.find((s) => s.name === name);
+    if (!p) return;
+    const blob = new Blob([JSON.stringify(p, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `style-${p.name}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
+  const handleImportStyle = async (file: File | null) => {
+    if (!file) return;
+    const p = parseProfile(await file.text());
+    if (!p) {
+      alert("❌ 这不是一份风格档案(文件里缺少 name 字段,或不是 JSON)。");
+      return;
+    }
+    patchStyles(upsertStyle(styles, p));
+    if (overlay && confirm(`档案「${p.name}」已导入。现在套用到当前编排吗?`))
+      handleApplyStyle(p.name);
   };
 
   // 删除卡片(时间轴选中后 Delete / 右栏按钮)
@@ -1102,6 +1228,7 @@ export default function App() {
         }}
         onImportJson={handleImportJson}
         onLoadDemo={handleLoadDemo}
+        onLoadDemoPro={handleLoadDemoPro}
         effectName={effect.name}
         onReplay={() => setPlayToken((t) => t + 1)}
         exporting={exporting}
@@ -1146,6 +1273,14 @@ export default function App() {
               : o,
           );
         }}
+        aspect={normalizeAspect(overlay?.aspect)}
+        onAspect={handleAspect}
+        styles={styles}
+        onSaveStyle={handleSaveStyle}
+        onApplyStyle={handleApplyStyle}
+        onDeleteStyle={handleDeleteStyle}
+        onExportStyle={handleExportStyle}
+        onImportStyle={handleImportStyle}
         showGuides={showGuides}
         onToggleGuides={() => setShowGuides((v) => !v)}
         showPerson={showPerson}
@@ -1203,6 +1338,7 @@ export default function App() {
           overlayCards={inEdit ? activeCards : null}
           now={curT}
           overlayTheme={overlay?.theme}
+          aspect={normalizeAspect(overlay?.aspect)}
           glow={overlay?.glow ?? false}
           font={overlay?.font}
           inkColor={overlay?.inkColor}

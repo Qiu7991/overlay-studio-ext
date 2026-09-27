@@ -1,0 +1,333 @@
+/* ============================================================
+   Pro 扩展卡 · C 组(情绪爆点 ×2 + 氛围底噪 ×3)
+   前缀:xsc-(全组类名互不冲突;不改 hud.css / 其他组的文件)
+   动效路径:
+   - 进场/落定  → CSS transition + 根节点 .is-in(useEnter 控制)
+   - 持续运动   → infinite animation(导出时 FxSpeedScope 逐帧校正
+                 playbackRate,不依赖 rAF 时钟,可稳定重放)
+   - 全屏氛围卡 → position:absolute; inset:0; pointer-events:none,不吃锚点
+   ============================================================ */
+
+/* ============ 1. PulseRing · 脉冲圆环(情绪爆点) ============ */
+.xsc-pr { color: var(--hud-ink); }
+
+.xsc-pr-stage {
+  position: relative;
+  width: 780px;
+  height: 780px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.94);
+  transition: opacity 620ms var(--ease), transform 760ms var(--ease);
+}
+.xsc-pr.is-in .xsc-pr-stage { opacity: 1; transform: none; }
+
+/* 环:同一尺寸的圆环从 0.16 倍扩到 1 倍并淡出。
+   多环靠负 animation-delay 错相位(JS 里按环数算),不用 setTimeout 编排 */
+.xsc-pr-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--hud-acc) 70%, transparent);
+  box-shadow: 0 0 36px color-mix(in srgb, var(--hud-acc) 24%, transparent);
+  opacity: 0;
+  transform: scale(0.16);
+  animation: xsc-pr-pulse 3.2s var(--ease) infinite;
+}
+@keyframes xsc-pr-pulse {
+  0% { transform: scale(0.16); opacity: 0; }
+  14% { opacity: 0.62; }
+  60% { opacity: 0.26; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+/* 圆心柔光:跟着计数一起呼吸 */
+.xsc-pr-glow {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--hud-acc) 26%, transparent) 0%, transparent 70%);
+  animation: xsc-pr-breathe 2.6s var(--ease) infinite alternate;
+}
+@keyframes xsc-pr-breathe {
+  from { transform: scale(0.9); opacity: 0.72; }
+  to { transform: scale(1.14); opacity: 1; }
+}
+
+.xsc-pr-core { position: relative; text-align: center; }
+.xsc-pr-num {
+  font-size: 132px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+  text-shadow: var(--hud-sh);
+}
+.xsc-pr-unit {
+  margin-left: 12px;
+  font-size: 42px;
+  font-style: normal;
+  font-weight: 700;
+  color: var(--hud-muted);
+}
+.xsc-pr-text {
+  margin-top: 18px;
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  color: var(--hud-muted);
+}
+
+/* ============ 2. ShakeSlam · 重击落字(情绪爆点) ============ */
+/* 满屏层:大字砸下 → 落定瞬间整层抖一下(一次性)+ 冲击线弹出 → 小字淡入 */
+.xsc-ss {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  pointer-events: none;
+  color: var(--hud-ink);
+}
+/* 落定抖动:一次性(不是 infinite),delay 对齐大字砸下的落点 520ms */
+.xsc-ss.is-in { animation: xsc-ss-quake 460ms var(--ease) 520ms 1 both; }
+@keyframes xsc-ss-quake {
+  0% { transform: translate3d(0, 0, 0); }
+  16% { transform: translate3d(-17px, 8px, 0) rotate(-0.5deg); }
+  34% { transform: translate3d(14px, -6px, 0) rotate(0.42deg); }
+  52% { transform: translate3d(-9px, 4px, 0) rotate(-0.3deg); }
+  70% { transform: translate3d(6px, -3px, 0) rotate(0.18deg); }
+  86% { transform: translate3d(-3px, 1px, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+.xsc-ss-title {
+  font-size: 176px;
+  font-weight: 900;
+  line-height: 1.04;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-shadow: var(--hud-sh);
+  opacity: 0;
+  transform: translateY(-560px) scale(1.05);
+  transition: transform 520ms var(--ease), opacity 240ms var(--ease);
+}
+.xsc-ss.is-in .xsc-ss-title { opacity: 1; transform: none; }
+
+/* 冲击横线:落定后从中间弹开 */
+.xsc-ss-line {
+  width: 62%;
+  height: 6px;
+  margin-top: 44px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, transparent, var(--hud-acc) 18%, var(--hud-acc) 82%, transparent);
+  box-shadow: 0 0 30px color-mix(in srgb, var(--hud-acc) 55%, transparent);
+  opacity: 0;
+  transform: scaleX(0);
+  transition: transform 480ms var(--ease) 520ms, opacity 220ms var(--ease) 520ms;
+}
+.xsc-ss.is-in .xsc-ss-line { opacity: 1; transform: scaleX(1); }
+
+.xsc-ss-sub {
+  margin-top: 36px;
+  font-size: 40px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  color: var(--hud-muted);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 560ms var(--ease) 980ms, transform 560ms var(--ease) 980ms;
+}
+.xsc-ss.is-in .xsc-ss-sub { opacity: 1; transform: none; }
+
+/* 整屏冲击光:落定那一瞬铺一层,随即散掉(一次性) */
+.xsc-ss-flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(58% 46% at 50% 46%, color-mix(in srgb, var(--hud-acc) 32%, transparent), transparent 72%);
+  opacity: 0;
+}
+.xsc-ss.is-in .xsc-ss-flash {
+  animation: xsc-ss-flash 560ms var(--ease) 500ms 1 both;
+}
+@keyframes xsc-ss-flash {
+  0% { opacity: 0; transform: scale(0.86); }
+  22% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.08); }
+}
+
+/* ============ 3. GrainBed · 颗粒底噪(全屏最底层) ============ */
+.xsc-gb {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 900ms var(--ease);
+}
+.xsc-gb.is-in { opacity: 1; }
+
+/* 呼吸层:整层缓慢明暗起伏(alternate 往返,接缝处速度连续) */
+.xsc-gb-breathe {
+  position: absolute;
+  inset: 0;
+  animation: xsc-gb-breathe 7.5s var(--ease) infinite alternate;
+}
+@keyframes xsc-gb-breathe {
+  from { opacity: 0.7; }
+  to { opacity: 1; }
+}
+
+/* 颗粒:多层 1px 级 radial-gradient 平铺,尺寸/偏移各不相同 → 去规则感。
+   不用图片文件,纯 CSS;整层再斜 2.5° 打散点阵的方格感,
+   缓慢位移(alternate)制造颗粒蠕动 */
+.xsc-gb-grain {
+  position: absolute;
+  inset: -22%;
+  opacity: var(--xsc-gb-op, 0.12);
+  background-image:
+    radial-gradient(rgba(255, 255, 255, 0.5) 0.5px, transparent 0.9px),
+    radial-gradient(rgba(0, 0, 0, 0.4) 0.5px, transparent 0.9px),
+    radial-gradient(rgba(255, 255, 255, 0.34) 0.45px, transparent 0.85px),
+    radial-gradient(rgba(0, 0, 0, 0.3) 0.55px, transparent 0.95px);
+  background-size: 2px 2px, 3px 3px, 3px 3px, 5px 5px;
+  background-position: 0 0, 1px 1px, 2px 2px, 3px 2px;
+  animation: xsc-gb-drift 11s var(--ease) infinite alternate;
+}
+@keyframes xsc-gb-drift {
+  from { transform: rotate(2.5deg) translate3d(-1.6%, -1.1%, 0); }
+  to { transform: rotate(2.5deg) translate3d(1.8%, 1.4%, 0); }
+}
+
+/* 暗角:中心透明 → 四角压暗;顶部再补一层极淡的强调色氛围 */
+.xsc-gb-vig {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(132% 122% at 50% 50%, transparent 42%, rgba(0, 0, 0, var(--xsc-gb-vig, 0.4)) 100%),
+    radial-gradient(62% 46% at 50% 0%, color-mix(in srgb, var(--hud-acc) 7%, transparent), transparent 70%);
+}
+
+/* ============ 4. GridDrift · 网格漂移(全屏最底层) ============ */
+.xsc-gd {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 900ms var(--ease);
+}
+.xsc-gd.is-in { opacity: 1; }
+
+/* 透视地面:绕上边缘旋转 72°,上边缘即地平线;mask 让远端按 fade 淡出。
+   overflow:hidden 把瓦片层多出的那一格裁掉,地平线以上不会漏出网格。
+   几何配平:plane 高 900 + perspective 1400,近端越过画面下缘不露空 */
+.xsc-gd-plane {
+  --xsc-gd-line: color-mix(in srgb, var(--hud-acc) 30%, transparent);
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 42%;
+  height: 900px;
+  overflow: hidden;
+  transform-origin: 50% 0%;
+  transform: perspective(1400px) rotateX(72deg);
+  /* 远端淡出:遮罩从全透明爬到全不透明,爬升段越长(fade 越大)远处越虚 */
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, #000 var(--xsc-gd-fade-stop, 70%));
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0) 0%, #000 var(--xsc-gd-fade-stop, 70%));
+}
+
+/* 瓦片层:两组正交线 + background-size = 密度。
+   每周期平移恰好一个格子 → 图案自映射,循环无缝。
+   循环位移用「两端速度相等」的近似匀速曲线:接缝处速度连续,不会每圈顿一下 */
+.xsc-gd-tiles {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(-1 * var(--xsc-gd-cell, 64px));
+  bottom: calc(-1 * var(--xsc-gd-cell, 64px));
+  background-image:
+    linear-gradient(to right, var(--xsc-gd-line) 0 1px, transparent 1px),
+    linear-gradient(to bottom, var(--xsc-gd-line) 0 1px, transparent 1px);
+  background-size: var(--xsc-gd-cell, 64px) var(--xsc-gd-cell, 64px);
+  animation: xsc-gd-move 7s cubic-bezier(0.42, 0.44, 0.58, 0.56) infinite;
+}
+@keyframes xsc-gd-move {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(0, var(--xsc-gd-cell, 64px), 0); }
+}
+
+/* 地平线:一条强调色细线 + 柔光带 */
+.xsc-gd-horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 42%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--hud-acc) 62%, transparent) 50%, transparent);
+  box-shadow: 0 0 64px 14px color-mix(in srgb, var(--hud-acc) 20%, transparent);
+}
+
+/* ============ 5. AuroraGlow · 光晕氛围(全屏最底层) ============ */
+/* 只用 radial-gradient + filter:blur 画柔光团;
+   刻意不用 backdrop-filter —— 导出时背后没有可糊的画面,会整块丢掉 */
+.xsc-ag {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1100ms var(--ease);
+}
+.xsc-ag.is-in { opacity: 1; }
+
+.xsc-ag-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(56px);
+  opacity: calc(var(--xsc-ag-i, 0.55) * 0.85);
+}
+.xsc-ag-blob--a {
+  width: 1180px;
+  height: 1180px;
+  left: -8%;
+  top: -20%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--xsc-ag-a) 72%, transparent) 0%, transparent 68%);
+  animation: xsc-ag-drift-a 18s var(--ease) infinite alternate;
+}
+.xsc-ag-blob--b {
+  width: 1020px;
+  height: 1020px;
+  right: -6%;
+  bottom: -24%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--xsc-ag-b) 66%, transparent) 0%, transparent 70%);
+  animation: xsc-ag-drift-b 22s var(--ease) infinite alternate;
+}
+.xsc-ag-blob--c {
+  width: 880px;
+  height: 880px;
+  left: 32%;
+  top: 18%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--hud-acc) 46%, transparent) 0%, transparent 72%);
+  animation: xsc-ag-drift-c 15s var(--ease) infinite alternate;
+}
+@keyframes xsc-ag-drift-a {
+  from { transform: translate3d(-4%, -3%, 0) scale(1); }
+  to { transform: translate3d(10%, 8%, 0) scale(1.18); }
+}
+@keyframes xsc-ag-drift-b {
+  from { transform: translate3d(5%, 6%, 0) scale(1.12); }
+  to { transform: translate3d(-8%, -6%, 0) scale(0.96); }
+}
+@keyframes xsc-ag-drift-c {
+  from { transform: translate3d(-6%, 4%, 0) scale(0.92); }
+  to { transform: translate3d(7%, -5%, 0) scale(1.1); }
+}
+
+/* 亮底主题:柔光团再压一档,避免亮底上糊成一片白 */
+[data-card-theme="light"] .xsc-ag-blob { opacity: calc(var(--xsc-ag-i, 0.55) * 0.66); }

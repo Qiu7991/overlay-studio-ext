@@ -4,7 +4,7 @@ import "./fonts"; // 自定义字体注册:导出端也要有 @font-face,成片�
 import { EFFECTS } from "./effects/registry";
 import { FxSpeedScope } from "./effects/FxSpeedScope";
 import { outroFade, parseOverlay, type OverlayDoc } from "./overlay/types";
-import { STAGE } from "./stage";
+import { stageOf } from "./stage";
 import "./effects/hud/hud.css";
 import "./App.css";
 
@@ -76,8 +76,8 @@ function renderCard(
   );
 }
 
-const stageStyle = (scale: number) => {
-  const { w, h } = STAGE;
+const stageStyle = (aspect: string | undefined, scale: number) => {
+  const { w, h } = stageOf(aspect);
   return {
     position: "fixed",
     left: 0,
@@ -151,8 +151,9 @@ function TimelineExport({ doc, scale, speed }: { doc: OverlayDoc; scale: number;
       <div
         className={`stage is-hud is-export${doc.glow ? "" : " no-glow"}`}
         data-theme={doc.theme ?? "dark"}
+        data-aspect={stageOf(doc.aspect).portrait ? "9:16" : "16:9"}
         style={{
-          ...stageStyle(scale),
+          ...stageStyle(doc.aspect, scale),
           ...(doc.font ? { ["--hud-font" as string]: `"${doc.font}"` } : {}),
           ...inkVars(doc.inkColor),
         }}

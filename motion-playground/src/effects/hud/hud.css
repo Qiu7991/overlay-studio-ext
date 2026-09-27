@@ -1,4 +1,10 @@
 /* 【这个文件每次更新都会被替换】你在这里改的东西,更新后不会自动保留,需要手工搬运。 */
+/* Pro 扩充卡的样式:放在这里统一引入,而不是让各卡文件自己 import ——
+   lint CLI(tsx)要能直接加载卡片组件,而 tsx 不认 .css 扩展名,卡文件里带 css import 会让
+   `npm run lint:overlay` 直接崩。集中到 hud.css,App 和导出页都只认这一个入口。 */
+@import "./pro-cards-a.css";
+@import "./pro-cards-b.css";
+@import "./pro-cards-c.css";
 /* ============================================================
    HUD 特效族 · 共享地基
    配色:钴蓝为主(数据/信任),红作否定、橙作转变;其余令牌只作个别卡的点缀
@@ -9,6 +15,49 @@
   --stage-w: 1920px;
   --stage-h: 1080px;
 }
+
+/* 竖屏 9:16 版式重排。
+   .stage 上由 stage.ts 写入 data-aspect(16:9 / 9:16)。
+   横屏那一套锚点/槽位按 1920 宽算,竖屏下 1080 宽放不下,这里统一覆盖;
+   卡片组件本身不动,只改「它们站在画布哪一块」。 */
+.stage[data-aspect="9:16"] {
+  --stage-w: 1080px;
+  --stage-h: 1920px;
+}
+/* 竖屏:左右锚点全部收到中间一列,上下留白加大(避开人物头部与底部字幕) */
+.stage[data-aspect="9:16"] .hud-anchor--left,
+.stage[data-aspect="9:16"] .hud-anchor--right,
+.stage[data-aspect="9:16"] .hud-anchor--top-left,
+.stage[data-aspect="9:16"] .hud-anchor--top-right {
+  left: 50%;
+  right: auto;
+  --anchor-tf: translateX(-50%);
+  transform-origin: center center;
+}
+.stage[data-aspect="9:16"] .hud-anchor--top-left,
+.stage[data-aspect="9:16"] .hud-anchor--top-right {
+  top: 180px;
+  --anchor-tf: translateX(-50%);
+}
+.stage[data-aspect="9:16"] .hud-anchor--left,
+.stage[data-aspect="9:16"] .hud-anchor--right {
+  top: 42%;
+}
+.stage[data-aspect="9:16"] .hud-anchor--top { top: 190px; }
+.stage[data-aspect="9:16"] .hud-anchor--bottom { bottom: 240px; }
+/* 竖屏:左右槽位改为上下两段(单列流),宽度吃满安全边 */
+.stage[data-aspect="9:16"] .slot {
+  left: 96px;
+  right: 96px;
+  width: auto;
+  top: 0;
+  bottom: 0;
+}
+/* 竖屏:人物占位与安全区参考线按新画幅收窄 */
+.stage[data-aspect="9:16"] .person { width: 620px; }
+.stage[data-aspect="9:16"] .person-body { width: 420px; height: 620px; }
+.stage[data-aspect="9:16"] .guide-safe { left: 96px; right: 96px; }
+.stage[data-aspect="9:16"] .guide-slot { width: auto; left: 96px; right: 96px; }
 
 /* ---- 主题令牌(挂在 .stage 上,由 Canvas 写 data-theme;
         卡片包装层写 data-card-theme 可逐卡覆盖亮/暗) ---- */
@@ -727,6 +776,27 @@
 .stage.no-glow .ctrack[data-stroke="on"] .ctrack-en * {
   text-shadow: var(--cap-shadow-en) !important;
 }
+
+/* 竖屏 9:16 下的常驻层字号:横屏的 21px 章名 / 44px 字幕在 1080 宽里太挤,
+   收一档并允许更长章名换行 —— 卡片组件不动,只改字号与折行。 */
+.stage[data-aspect="9:16"] .cbar { height: 56px; }
+.stage[data-aspect="9:16"] .cbar-item {
+  font-size: 19px;
+  letter-spacing: 0.02em;
+  padding: 0 6px;
+  text-align: center;
+  line-height: 1.15;
+}
+.stage[data-aspect="9:16"] .cbar-lb {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.stage[data-aspect="9:16"] .ctrack { bottom: 120px; }
+.stage[data-aspect="9:16"] .ctrack-cue { max-width: 960px; }
+.stage[data-aspect="9:16"] .ctrack-zh { font-size: calc(38px * var(--hud-scale, 1)); }
+.stage[data-aspect="9:16"] .ctrack-en { font-size: calc(15px * var(--hud-scale, 1)); }
 
 /* ---- StatProof 数字实证 (.spf):裸排版滚动计数 ---- */
 .spf-box {

@@ -39,7 +39,17 @@ export interface LintConfig {
 
 export const LINT_DEFAULTS: LintConfig = {
   minDwell: 2,
-  dwellExemptKinds: ["chapter-bar", "caption-track"],
+  dwellExemptKinds: [
+    "chapter-bar",
+    "caption-track",
+    // Pro 扩充:转场是一次性动作(1-2s 本来就短),氛围底噪铺满整段 —— 都不按内容卡的最短驻留要求
+    "warp-title",
+    "split-wipe",
+    "flash-cut",
+    "aurora-glow",
+    "grain-bed",
+    "grid-drift",
+  ],
   minOffsetGap: 90,
   maxQuietGap: 10,
   scaleTiers: [],
@@ -85,6 +95,16 @@ const SEQ_SPECS: Record<string, SeqSpec[]> = {
   "checklist": [{ step: "stepMs", list: "items", sep: "|" }],
   "entity-chips": [{ step: "stepMs", list: "chips" }],
   "focus-card": [{ step: "stepMs", list: "items", sep: "|" }],
+  // Pro 扩充:结构类卡片逐支/逐层/逐项落位,同样按卡内节奏算动作点
+  "org-chart": [{ step: "lineMs", list: "branches" }],
+  "layered-stack": [{ step: "stepMs", list: "layers" }],
+  "matrix-grid": [{ step: "stepMs", list: "items" }],
+  "mind-map": [
+    { step: "stepMs", list: "left" },
+    { step: "stepMs", list: "right" },
+  ],
+  "funnel-flow": [{ step: "__span", list: "stages" }],
+  "cycle-loop": [{ step: "stepMs", list: "nodes" }],
 };
 
 /** 从 times 类参数 + 卡内逐条节奏里抽出动作时间点(板内行点亮、逐块铺开都算) */

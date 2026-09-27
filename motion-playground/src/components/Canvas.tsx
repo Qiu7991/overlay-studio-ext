@@ -8,7 +8,7 @@ import {
 } from "react";
 import type { EffectDef } from "../effects/types";
 import { EFFECTS } from "../effects/registry";
-import { STAGE } from "../stage";
+import { STAGE, stageOf, type Aspect } from "../stage";
 import { focusCamGeom } from "../effects/hud/camGeom";
 import { outroFade, type OverlayCard } from "../overlay/types";
 import { useEnter } from "../effects/useAnimation";
@@ -30,6 +30,8 @@ interface CanvasProps {
   /** 时间轴模式:当前播放头时刻(秒),注入给时间感知卡(章节条/字幕层) */
   now?: number;
   overlayTheme?: "dark" | "light";
+  /** 画幅:横屏 16:9(默认)/ 竖屏 9:16 */
+  aspect?: Aspect;
   /** 文字可读性光晕(默认关) */
   glow?: boolean;
   /** 全局字体(doc.font):空 = 默认 */
@@ -220,6 +222,7 @@ export function Canvas({
   overlayCards,
   now,
   overlayTheme,
+  aspect,
   glow,
   font,
   inkColor,
@@ -231,8 +234,9 @@ export function Canvas({
   onNudge,
   onPickCard,
 }: CanvasProps) {
-  // 画布逻辑尺寸:1920×1080
-  const { w: STAGE_W, h: STAGE_H } = STAGE;
+  // 画布逻辑尺寸:跟随编排画幅(横屏 1920×1080 / 竖屏 1080×1920)
+  const stage = stageOf(aspect);
+  const { w: STAGE_W, h: STAGE_H } = stage;
   const wrapRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const videoNodeRef = useRef<HTMLVideoElement | null>(null);
@@ -292,6 +296,7 @@ export function Canvas({
         ref={stageRef}
         className={`stage${isHud ? " is-hud" : ""}${glow ? "" : " no-glow"}`}
         data-theme={theme}
+        data-aspect={stage.portrait ? "9:16" : "16:9"}
         data-pip={pip && pipCard ? pipCard.kind : undefined}
         style={{
           width: STAGE_W,

@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ACCENT_OPTIONS } from "../effects/hud/accent";
 import { CUSTOM_FONTS } from "../fonts";
+import { STAGES, type Aspect } from "../stage";
+import type { StyleProfile } from "../styles";
 
 export type StudioTab = "edit" | "library";
 
@@ -75,6 +77,8 @@ interface TopBarProps {
   onReset: () => void;
   onImportJson: (file: File | null) => void;
   onLoadDemo: () => void;
+  /** Pro 扩充演示(信息结构/转场/爆点/氛围底噪) */
+  onLoadDemoPro: () => void;
   /* 效果库 */
   effectName: string;
   onReplay: () => void;
@@ -100,6 +104,15 @@ interface TopBarProps {
   inkColor: string;
   onInkColor: (c: string) => void;
   onUnifyAccent: (accent: string) => void;
+  /* 画幅与风格复用(Pro) */
+  aspect: Aspect;
+  onAspect: (a: Aspect) => void;
+  styles: StyleProfile[];
+  onSaveStyle: (name: string) => void;
+  onApplyStyle: (name: string) => void;
+  onDeleteStyle: (name: string) => void;
+  onExportStyle: (name: string) => void;
+  onImportStyle: (file: File | null) => void;
   showGuides: boolean;
   onToggleGuides: () => void;
   showPerson: boolean;
@@ -201,6 +214,7 @@ export function TopBar({
   onReset,
   onImportJson,
   onLoadDemo,
+  onLoadDemoPro,
   effectName,
   onReplay,
   exporting,
@@ -220,6 +234,14 @@ export function TopBar({
   inkColor,
   onInkColor,
   onUnifyAccent,
+  aspect,
+  onAspect,
+  styles,
+  onSaveStyle,
+  onApplyStyle,
+  onDeleteStyle,
+  onExportStyle,
+  onImportStyle,
   showGuides,
   onToggleGuides,
   showPerson,
@@ -231,6 +253,8 @@ export function TopBar({
   const mate = FORMS.find((f) => f.id === form)?.mate ?? "";
   const videoRef = useRef<HTMLInputElement>(null);
   const jsonRef = useRef<HTMLInputElement>(null);
+  const styleRef = useRef<HTMLInputElement>(null);
+  const [styleName, setStyleName] = useState("");
   return (
     <div className="topbar">
       <div className="tb-brand">
@@ -396,6 +420,98 @@ export function TopBar({
                 </button>
               </div>
 
+              <div className="tb-prefs-row">
+                <span>画幅(导出尺寸)</span>
+                <select
+                  className="tb-prefs-ctl"
+                  value={aspect}
+                  onChange={(e) => onAspect(e.target.value as Aspect)}
+                  disabled={!hasDoc}
+                  title="横屏 1920×1080 / 竖屏 1080×1920。竖屏仍在试验中,导出尺寸会跟着变"
+                >
+                  {Object.entries(STAGES).map(([k, v]) => (
+                    <option key={k} value={k}>
+                      {v.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="tb-prefs-row">
+                <span>风格复用</span>
+                <span className="tb-prefs-ctl tb-style-row">
+                  <input
+                    type="text"
+                    className="tb-style-name"
+                    placeholder="档案名"
+                    value={styleName}
+                    onChange={(e) => setStyleName(e.target.value)}
+                  />
+                  <button
+                    className="tb-mini"
+                    disabled={!hasDoc || !styleName.trim()}
+                    onClick={() => {
+                      onSaveStyle(styleName.trim());
+                      setStyleName("");
+                    }}
+                    title="把当前的主题/强调色/字体/文字色/画幅/倍速存成档案"
+                  >
+                    存
+                  </button>
+                </span>
+              </div>
+
+              {styles.length > 0 && (
+                <div className="tb-prefs-row">
+                  <span>已存档案</span>
+                  <span className="tb-prefs-ctl tb-style-row">
+                    <button className="tb-mini" onClick={() => styleRef.current?.click()} title="从文件导入档案">
+                      导入
+                    </button>
+                  </span>
+                </div>
+              )}
+              {styles.length === 0 && (
+                <div className="tb-prefs-row">
+                  <span>已存档案</span>
+                  <span className="tb-prefs-ctl tb-style-row">
+                    <button className="tb-mini" onClick={() => styleRef.current?.click()} title="从文件导入档案">
+                      导入档案
+                    </button>
+                  </span>
+                </div>
+              )}
+
+              {styles.length > 0 && (
+                <div className="tb-prefs-list">
+                  {styles.map((s) => (
+                    <span className="tb-style-chip" key={s.name}>
+                      <button
+                        className="tb-style-chip-name"
+                        disabled={!hasDoc}
+                        onClick={() => onApplyStyle(s.name)}
+                        title={`套用「${s.name}」(只改视觉,可撤销)`}
+                      >
+                        {s.name}
+                      </button>
+                      <button className="tb-mini" onClick={() => onExportStyle(s.name)} title="导出档案文件">
+                        ↧
+                      </button>
+                      <button
+                        className="tb-mini"
+                        onClick={() => {
+                          if (confirm(`删掉档案「${s.name}」?(只删档案,不影响当前编排)`))
+                            onDeleteStyle(s.name);
+                        }}
+                        title="删除档案"
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+
               <div className="tb-prefs-kicker">仅编辑时可见 · 不影响导出</div>
 
               {/* 风格/配色本来摆在顶栏里,两个下拉占掉近 300px —— 控件大一档的
@@ -490,6 +606,13 @@ export function TopBar({
         </button>
         <button
           className="tb-btn"
+          onClick={onLoadDemoPro}
+          title="载入 Pro 扩充演示:信息结构 / 转场 / 情绪爆点 / 氛围底噪"
+        >
+          🧩 示例·Pro
+        </button>
+        <button
+          className="tb-btn"
           disabled={videoBusy}
           onClick={() => videoRef.current?.click()}
         >
@@ -522,6 +645,16 @@ export function TopBar({
           // 清掉选中值:不清的话重选同一个文件不会触发 change(上传失败后重试就是这一幕),
           // 侧栏那个入口和上面的 JSON 入口都清了,只有这里漏了
           if (videoRef.current) videoRef.current.value = "";
+        }}
+      />
+      <input
+        ref={styleRef}
+        type="file"
+        accept=".json,application/json"
+        style={{ display: "none" }}
+        onChange={(e) => {
+          onImportStyle(e.target.files?.[0] ?? null);
+          if (styleRef.current) styleRef.current.value = "";
         }}
       />
     </div>

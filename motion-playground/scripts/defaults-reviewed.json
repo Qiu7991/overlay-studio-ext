@@ -1,82 +1,142 @@
 {
+  "aurora-glow": {
+    "hash": "50a61260faf6",
+    "file": "src\\effects\\hud\\AuroraGlow.tsx"
+  },
   "blur-text": {
     "hash": "8f38a94332a3",
-    "file": "src/effects/hud/BlurText.tsx"
+    "file": "src\\effects\\hud\\BlurText.tsx"
   },
   "caption-track": {
     "hash": "3d718126ae6e",
-    "file": "src/effects/hud/CaptionTrack.tsx"
+    "file": "src\\effects\\hud\\CaptionTrack.tsx"
   },
   "chapter-bar": {
     "hash": "45de8220b2f7",
-    "file": "src/effects/hud/ChapterBar.tsx"
+    "file": "src\\effects\\hud\\ChapterBar.tsx"
   },
   "checklist": {
     "hash": "6092ee834bf2",
-    "file": "src/effects/hud/Checklist.tsx"
+    "file": "src\\effects\\hud\\Checklist.tsx"
+  },
+  "cycle-loop": {
+    "hash": "ea39199d8a15",
+    "file": "src\\effects\\hud\\CycleLoop.tsx"
   },
   "entity-chips": {
     "hash": "0f494f28b48e",
-    "file": "src/effects/hud/EntityChips.tsx"
+    "file": "src\\effects\\hud\\EntityChips.tsx"
+  },
+  "flash-cut": {
+    "hash": "8028a74369bb",
+    "file": "src\\effects\\hud\\FlashCut.tsx"
   },
   "focus-card": {
     "hash": "16853ea6b6f1",
-    "file": "src/effects/hud/FocusCard.tsx"
+    "file": "src\\effects\\hud\\FocusCard.tsx"
+  },
+  "funnel-flow": {
+    "hash": "81241830c8fa",
+    "file": "src\\effects\\hud\\FunnelFlow.tsx"
+  },
+  "grain-bed": {
+    "hash": "8999032b52f9",
+    "file": "src\\effects\\hud\\GrainBed.tsx"
+  },
+  "grid-drift": {
+    "hash": "cea50728b7fe",
+    "file": "src\\effects\\hud\\GridDrift.tsx"
   },
   "growth-curve": {
     "hash": "d9750400627d",
-    "file": "src/effects/hud/GrowthCurve.tsx"
+    "file": "src\\effects\\hud\\GrowthCurve.tsx"
+  },
+  "impact-burst": {
+    "hash": "2f83d78cafd9",
+    "file": "src\\effects\\hud\\ImpactBurst.tsx"
+  },
+  "layered-stack": {
+    "hash": "4f36386dcb3a",
+    "file": "src\\effects\\hud\\LayeredStack.tsx"
+  },
+  "matrix-grid": {
+    "hash": "89b988e1348f",
+    "file": "src\\effects\\hud\\MatrixGrid.tsx"
+  },
+  "mind-map": {
+    "hash": "5c5efbb8c1d0",
+    "file": "src\\effects\\hud\\MindMap.tsx"
   },
   "odometer": {
     "hash": "c32549c9352b",
-    "file": "src/effects/hud/Odometer.tsx"
+    "file": "src\\effects\\hud\\Odometer.tsx"
+  },
+  "org-chart": {
+    "hash": "96a6c0ed2078",
+    "file": "src\\effects\\hud\\OrgChart.tsx"
   },
   "pin-board": {
     "hash": "45d3a1cf4663",
-    "file": "src/effects/hud/PinBoard.tsx"
+    "file": "src\\effects\\hud\\PinBoard.tsx"
+  },
+  "pulse-ring": {
+    "hash": "7e8546e2be2e",
+    "file": "src\\effects\\hud\\PulseRing.tsx"
   },
   "punch-pill": {
     "hash": "b27d1895c249",
-    "file": "src/effects/hud/PunchPill.tsx"
+    "file": "src\\effects\\hud\\PunchPill.tsx"
   },
   "quote-lockup": {
     "hash": "f052c9f61b03",
-    "file": "src/effects/QuoteLockup.tsx"
+    "file": "src\\effects\\QuoteLockup.tsx"
   },
   "rank-bars": {
     "hash": "1e986f5e195e",
-    "file": "src/effects/hud/RankBars.tsx"
+    "file": "src\\effects\\hud\\RankBars.tsx"
   },
   "ring-metric": {
     "hash": "6f3638292a4f",
-    "file": "src/effects/hud/RingMetric.tsx"
+    "file": "src\\effects\\hud\\RingMetric.tsx"
+  },
+  "shake-slam": {
+    "hash": "316d02a9ae32",
+    "file": "src\\effects\\hud\\ShakeSlam.tsx"
+  },
+  "split-wipe": {
+    "hash": "4fcc60c4d8fc",
+    "file": "src\\effects\\hud\\SplitWipe.tsx"
   },
   "stat-proof": {
     "hash": "0578b9ebba86",
-    "file": "src/effects/hud/StatProof.tsx"
+    "file": "src\\effects\\hud\\StatProof.tsx"
   },
   "step-timeline": {
     "hash": "f5979e7ead1c",
-    "file": "src/effects/hud/StepTimeline.tsx"
+    "file": "src\\effects\\hud\\StepTimeline.tsx"
   },
   "term-card": {
     "hash": "a058f7ed8735",
-    "file": "src/effects/hud/TermCard.tsx"
+    "file": "src\\effects\\hud\\TermCard.tsx"
   },
   "terminal-3d": {
     "hash": "1138894a38db",
-    "file": "src/effects/hud/Terminal3D.tsx"
+    "file": "src\\effects\\hud\\Terminal3D.tsx"
   },
   "type-shift": {
     "hash": "156f06812ce1",
-    "file": "src/effects/hud/TypeShift.tsx"
+    "file": "src\\effects\\hud\\TypeShift.tsx"
   },
   "ui-callout": {
     "hash": "2da0556855f5",
-    "file": "src/effects/hud/UICallout.tsx"
+    "file": "src\\effects\\hud\\UICallout.tsx"
   },
   "versus-card": {
     "hash": "312ac4854fa6",
-    "file": "src/effects/hud/VersusCard.tsx"
+    "file": "src\\effects\\hud\\VersusCard.tsx"
+  },
+  "warp-title": {
+    "hash": "d8e2ee3fb95a",
+    "file": "src\\effects\\hud\\WarpTitle.tsx"
   }
 }

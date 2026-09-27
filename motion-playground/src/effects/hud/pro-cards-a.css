@@ -1,0 +1,401 @@
+/* ============================================================
+   Pro 卡组 A · 信息结构(OrgChart / LayeredStack / MatrixGrid /
+   MindMap / FunnelFlow)· 类名前缀 xsa- · 只读令牌,不改 hud.css
+   ============================================================ */
+
+/* ---- 通用:五张卡根节点都是纵向单列容器 ---- */
+.xsa-org,
+.xsa-ls,
+.xsa-mg,
+.xsa-mm,
+.xsa-ff {
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ============ 1. OrgChart 组织架构 ============ */
+.xsa-org-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.xsa-org-root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 20px 44px;
+  border-radius: 18px;
+  background: var(--hud-glass);
+  border: 1px solid var(--hud-glass-brd);
+  backdrop-filter: blur(26px) saturate(1.3);
+  -webkit-backdrop-filter: blur(26px) saturate(1.3);
+  box-shadow: var(--hud-card-sh);
+  opacity: 0;
+  transform: translateY(-16px) scale(0.97);
+  transition: opacity 560ms var(--ease), transform 680ms var(--ease);
+}
+.xsa-org.is-in .xsa-org-root {
+  opacity: 1;
+  transform: none;
+}
+.xsa-org-root-name {
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: var(--hud-ink);
+}
+.xsa-org-root-sub {
+  font-family: "SF Mono", ui-monospace, monospace;
+  font-size: 18px;
+  letter-spacing: 0.12em;
+  color: var(--hud-acc);
+}
+.xsa-org-lines {
+  display: block;
+}
+.xsa-org-path {
+  fill: none;
+  stroke: var(--hud-acc);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.xsa-org-children {
+  display: flex;
+  align-items: stretch;
+  align-self: stretch;
+}
+.xsa-org-child {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 18px 24px;
+  border-radius: 14px;
+  background: var(--hud-glass);
+  border: 1px solid var(--hud-glass-brd);
+  backdrop-filter: blur(22px) saturate(1.25);
+  -webkit-backdrop-filter: blur(22px) saturate(1.25);
+  box-shadow: var(--hud-card-sh);
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 540ms var(--ease), transform 640ms var(--ease);
+}
+.xsa-org.is-in .xsa-org-child {
+  opacity: 1;
+  transform: none;
+}
+.xsa-org-child-name {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--hud-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.xsa-org-child-sub {
+  margin-top: 4px;
+  font-size: 18px;
+  color: var(--hud-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============ 2. LayeredStack 分层堆叠 ============ */
+.xsa-ls-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 720px;
+}
+.xsa-ls-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 26px 18px 32px;
+  border-radius: 14px;
+  background: var(--hud-glass);
+  border: 1px solid var(--hud-glass-brd);
+  backdrop-filter: blur(22px) saturate(1.25);
+  -webkit-backdrop-filter: blur(22px) saturate(1.25);
+  box-shadow: var(--hud-card-sh);
+  opacity: 0;
+  transform: translateY(30px) scale(0.98);
+  transition: opacity 520ms var(--ease), transform 640ms var(--ease);
+}
+.xsa-ls.is-in .xsa-ls-row {
+  opacity: 1;
+  transform: none;
+}
+.xsa-ls-mark {
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 4px;
+  border-radius: 3px;
+  background: var(--hud-acc);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform 520ms var(--ease);
+}
+.xsa-ls.is-in .xsa-ls-mark {
+  transform: scaleY(1);
+}
+.xsa-ls-name {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--hud-ink);
+  flex: none;
+}
+.xsa-ls-sub {
+  margin-left: auto;
+  font-size: 19px;
+  color: var(--hud-muted);
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============ 3. MatrixGrid 四象限矩阵 ============ */
+.xsa-mg-stage {
+  position: relative;
+  flex: none;
+  opacity: 0;
+  transform: scale(0.985);
+  transition: opacity 560ms var(--ease), transform 680ms var(--ease);
+}
+.xsa-mg.is-in .xsa-mg-stage {
+  opacity: 1;
+  transform: none;
+}
+.xsa-mg-svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+.xsa-mg-cell {
+  fill: color-mix(in srgb, var(--hud-ink) 4%, transparent);
+  stroke: var(--hud-track);
+  stroke-width: 1;
+}
+.xsa-mg-axis {
+  stroke: var(--hud-track);
+  stroke-width: 1.5;
+  stroke-dasharray: 7 7;
+}
+.xsa-mg-axis-lb {
+  position: absolute;
+  font-family: "SF Mono", ui-monospace, monospace;
+  font-size: 18px;
+  letter-spacing: 0.12em;
+  color: var(--hud-muted);
+  white-space: nowrap;
+}
+.xsa-mg-axis-lb--xl { left: 74px; bottom: 26px; }
+.xsa-mg-axis-lb--xr { right: 74px; bottom: 26px; }
+.xsa-mg-axis-lb--yt { left: 16px; top: 58px; }
+.xsa-mg-axis-lb--yb { left: 16px; bottom: 78px; }
+.xsa-mg-item {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  white-space: nowrap;
+}
+.xsa-mg-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--hud-acc);
+}
+.xsa-mg-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--hud-ink);
+}
+
+/* ============ 4. MindMap 思维导图 ============ */
+.xsa-mm-stage {
+  position: relative;
+  flex: none;
+}
+.xsa-mm-svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+.xsa-mm-path {
+  fill: none;
+  stroke: var(--hud-acc);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.xsa-mm-pill {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  padding: 20px 46px;
+  border-radius: 999px;
+  border: 1.5px solid var(--hud-acc);
+  background: color-mix(in srgb, var(--hud-acc) 14%, transparent);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: var(--hud-ink);
+  white-space: nowrap;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.9);
+  transition: opacity 480ms var(--ease), transform 560ms var(--ease);
+}
+.xsa-mm.is-in .xsa-mm-pill {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+.xsa-mm-node {
+  position: absolute;
+  width: 340px;
+  opacity: 0;
+  transition: opacity 520ms var(--ease), transform 620ms var(--ease);
+}
+.xsa-mm-node--left {
+  text-align: right;
+  transform: translate(-18px, -50%);
+}
+.xsa-mm-node--right {
+  transform: translate(18px, -50%);
+}
+.xsa-mm.is-in .xsa-mm-node--left,
+.xsa-mm.is-in .xsa-mm-node--right {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+.xsa-mm-name {
+  font-size: 27px;
+  font-weight: 800;
+  color: var(--hud-ink);
+}
+.xsa-mm-subs {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.xsa-mm-node--left .xsa-mm-subs {
+  align-items: flex-end;
+}
+.xsa-mm-node--right .xsa-mm-subs {
+  align-items: flex-start;
+}
+.xsa-mm-sub {
+  font-size: 18px;
+  color: var(--hud-muted);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 460ms var(--ease), transform 460ms var(--ease);
+}
+.xsa-mm.is-in .xsa-mm-sub {
+  opacity: 1;
+  transform: none;
+}
+
+/* ============ 5. FunnelFlow 漏斗流转 ============ */
+.xsa-ff-funnel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 760px;
+}
+.xsa-ff-slot {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.xsa-ff-row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.xsa-ff-bar {
+  flex: 1;
+  min-width: 0;
+  height: 78px;
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  border-radius: 12px;
+  background: var(--hud-glass);
+  border: 1px solid var(--hud-glass-brd);
+  backdrop-filter: blur(22px) saturate(1.25);
+  -webkit-backdrop-filter: blur(22px) saturate(1.25);
+  box-shadow: var(--hud-card-sh);
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 520ms var(--ease), transform 620ms var(--ease);
+}
+.xsa-ff.is-in .xsa-ff-bar {
+  opacity: 1;
+  transform: none;
+}
+.xsa-ff-bar.is-hi {
+  border-color: var(--hud-acc);
+  background: color-mix(in srgb, var(--hud-acc) 16%, transparent);
+}
+.xsa-ff-name {
+  font-size: 27px;
+  font-weight: 800;
+  color: var(--hud-ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.xsa-ff-val {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  width: 158px;
+  flex: none;
+}
+.xsa-ff-num {
+  font-size: 38px;
+  font-weight: 900;
+  color: var(--hud-ink);
+  font-variant-numeric: tabular-nums;
+}
+.xsa-ff-row--hi .xsa-ff-num {
+  color: var(--hud-acc);
+}
+.xsa-ff-unit {
+  font-family: "SF Mono", ui-monospace, monospace;
+  font-size: 19px;
+  letter-spacing: 0.1em;
+  color: var(--hud-muted);
+}
+.xsa-ff-arrow {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(-6px);
+  transition: opacity 420ms var(--ease), transform 420ms var(--ease);
+}
+.xsa-ff.is-in .xsa-ff-arrow {
+  opacity: 1;
+  transform: none;
+}
+.xsa-ff-arrow i {
+  width: 10px;
+  height: 10px;
+  border-right: 2.5px solid var(--hud-acc);
+  border-bottom: 2.5px solid var(--hud-acc);
+  transform: rotate(45deg);
+}
